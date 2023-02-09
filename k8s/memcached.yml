@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: memcached
+spec:
+  replicas: 3
+  serviceName: memcached
+  minReadySeconds: 5
+  selector:
+    matchLabels:
+      app: memcached
+  template:
+    metadata:
+      labels:
+        app: memcached
+    spec:
+      containers:
+      - name: memcached
+        image: memcached:1.6.18
+        args: ["-p 11211 -p 0.0.0.0"]
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 11211
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: memcached
+spec:
+  ports:
+  - port: 11211
+  selector:
+    app: memcached
+  clusterIP: None

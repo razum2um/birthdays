@@ -1,0 +1,32 @@
+version: '3'
+services:
+  postgres:
+    image: postgres:14
+    environment:
+      - POSTGRES_USER=birthdays_dev
+      - POSTGRES_PASSWORD=birthdays_dev
+      - POSTGRES_DB=birthdays_dev
+    tmpfs: "/var/lib/postgresql/data:rw,size=${DB_STORAGE_SIZE:-1024}M"
+  memcached-0:
+    image: memcached:1.6.18
+  memcached-1:
+    image: memcached:1.6.18
+  memcached-2:
+    image: memcached:1.6.18
+  nginx-cache:
+    image: razum2um/openresty-localhost:v1
+    network_mode: "service:app"
+  app:
+    image: razum2um/birthdays:v1
+    environment:
+    - RUST_LOG=info
+    - SERVER_ADDR=0.0.0.0:8080
+    - PG.HOST=postgres
+    - PG.USER=birthdays_dev
+    - PG.PASSWORD=birthdays_dev
+    - PG.DBNAME=birthdays_dev
+    ports:
+    - "8080:8080"
+    - "8000:8000"
+    depends_on:
+      - postgres

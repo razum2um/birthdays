@@ -1,0 +1,141 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: birthdays-config
+data:
+  SERVER_ADDR: '0.0.0.0:8080'
+  PG.HOST: 'localhost'
+  RUST_LOG: 'info'
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: birthdays
+spec:
+  replicas: 3
+  minReadySeconds: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: birthdays
+  template:
+    metadata:
+      labels:
+        app: birthdays
+    spec:
+      serviceAccountName: birthday-app-ksa
+      containers:
+      - name: openresty
+        image: razum2um/openresty-cloud:v1
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+        resources:
+          limits:
+            cpu: 0.3
+            memory: "256Mi"
+          requests:
+            cpu: 0.1
+            memory: "64Mi"
+        readinessProbe:
+          tcpSocket:
+            port: 8000
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+      - name: app
+        image: razum2um/birthdays:v1
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        envFrom:
+        - configMapRef:
+              name: birthdays-config
+        - secretRef:
+            name: db-secret
+        resources:
+          limits:
+            cpu: 0.5
+            memory: "512Mi"
+          requests:
+            cpu: 0.1
+            memory: "128Mi"
+        readinessProbe:
+          tcpSocket:
+            port: 8080
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+      - name: cloud-sql-proxy
+        image: gcr.io/cloudsql-docker/gce-proxy:1.33.2
+        command:
+          - "/cloud_sql_proxy"
+          - "-log_debug_stdout"
+          - "-instances=birthday-app:europe-west1:birthdays=tcp:5432"
+        securityContext:
+          runAsNonRoot: true
+        resources:
+          limits:
+            cpu: 0.2
+            memory: "256Mi"
+          requests:
+            cpu: 0.1
+            memory: "64Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: birthdays
+spec:
+  selector:
+    app: birthdays
+  ports:
+    - port: 80
+      targetPort: 8000
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: letsencrypt-production
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: vlad@razum2um.me
+    privateKeySecretRef:
+      name: letsencrypt-production
+    solvers:
+    - http01:
+        ingress:
+          name: nginx
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: birthdays
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    kubernetes.io/ingress.allow-http: "true"
+    cert-manager.io/issuer: letsencrypt-production
+    acme.cert-manager.io/http01-edit-in-place: "true"
+spec:
+  tls:
+  - secretName: birthdays-ssl-secret-3  
+    hosts:
+    - birthdays.razum2um.me
+  rules:
+  - host: birthdays.razum2um.me
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: birthdays
+            port:
+              number: 80

@@ -1,0 +1,98 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "This is a sample birthday app.",
+    "version": "1.0.0",
+    "title": "Birthdays",
+    "contact": {
+      "email": "vlad@razum2um.me"
+    }
+  },
+  "host": "localhost:8000",
+  "basePath": "/",
+  "paths": {
+    "/hello/{username}": {
+      "put": {
+        "summary": "Saves/updates the given user's name and date of birth in the database",
+        "description": "",
+        "operationId": "save_birthday",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "description": "must contain only letters",
+            "required": true,
+            "type": "string",
+            "default": "Vlad"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "YYYY-MM-DD must be a date before the today date",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DateOfBirth"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "successful operation"
+          },
+          "400": {
+            "description": "validation error"
+          }
+        }
+      },
+      "get": {
+        "summary": "Returns hello birthday message for the given user",
+        "description": "",
+        "operationId": "birthday",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "description": "must contain only letters",
+            "required": true,
+            "type": "string",
+            "default": "Vlad"
+          },
+          {
+            "name": "on",
+            "in": "query",
+            "description": "explicitly set on which date",
+            "required": false,
+            "type": "string",
+            "default": "2022-02-07"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "successful operation"
+          },
+          "400": {
+            "description": "validation error"
+          },
+          "404": {
+            "description": "unknown username"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "DateOfBirth": {
+      "required": ["dateOfBirth"],
+      "properties": {
+        "dateOfBirth": {
+          "type": "string",
+          "example": "1989-06-16"
+        }
+      }
+    }
+  }
+}

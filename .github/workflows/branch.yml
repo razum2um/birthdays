@@ -1,0 +1,40 @@
+name: branch
+on:
+  push:
+    branches-ignore:
+      - master
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: birthdays_test
+          POSTGRES_PASSWORD: birthdays_test
+          POSTGRES_DB: birthdays_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    name: Rust ${{ matrix.rust }}
+    defaults:
+      run:
+        working-directory: src/birthdays
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - name: Test
+        run: cargo test
+        env:
+          RUST_LOG: info
+          SERVER_ADDR: 0.0.0.0:8080
+          PG.HOST: localhost
+          PG.USER: birthdays_test
+          PG.PASSWORD: birthdays_test
+          PG.DBNAME: birthdays_test

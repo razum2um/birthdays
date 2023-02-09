@@ -1,0 +1,27 @@
+[package]
+name = "birthdays"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+actix-cors = "0.6.4"
+actix-redis = "0.12.0"
+actix-rt = "2.8.0"
+actix-test = "0.1.0"
+actix-web = "4"
+actix-web-prometheus = "0.1.2"
+chrono = { version = "0.4.23", features = ["serde"] }
+chronoutil = "0.2.3"
+config = "0.13.3"
+deadpool-postgres = { version = "0.10.5", features = ["serde"] }
+derive_more = "0.99.17"
+dotenv = "0.15.0"
+env_logger = "0.10.0"
+log = "0.4.17"
+redis = { version = "0.22.3", default-features = false, features = ["tokio-comp", "connection-manager"] }
+serde = { version = "1.0.152", features = ["derive", "serde_derive"] }
+serde_json = "1.0.91"
+time = "0.3.17"
+tokio-pg-mapper = "0.2.0"
+tokio-pg-mapper-derive = "0.2.0"
+tokio-postgres = { version = "0.7.7", features = ["with-chrono-0_4"] }

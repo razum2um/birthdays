@@ -1,0 +1,11 @@
+project_id = "birthday-app"
+region     = "europe-west1"
+
+db_master_zone      = "europe-west1-b"
+bastion_members     = ["user:bokov.vlad@gmail.com"]
+
+
+network_name = "cluster-network"
+subnet_name  = "cluster-subnet"
+subnet_ip    = "10.10.0.0/17"
+cluster_name = "cluster"

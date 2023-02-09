@@ -1,0 +1,13 @@
+FROM rust:slim-bookworm
+WORKDIR /usr/src/app
+RUN apt update && apt install -yy pkg-config libssl-dev
+RUN cargo install cargo-tarpaulin
+COPY ./Cargo.toml .
+COPY ./Cargo.lock .
+RUN mkdir ./src && echo 'fn main() { println!("Dummy!"); }' > ./src/main.rs
+RUN cargo build
+RUN rm -rf ./src
+COPY ./src ./src
+COPY ./sql ./sql
+RUN touch -a -m ./src/main.rs
+CMD ["cargo", "tarpaulin", "--skip-clean"]

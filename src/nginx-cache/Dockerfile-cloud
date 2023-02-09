@@ -1,0 +1,9 @@
+# TODO: make better startup scripts in container to fix values
+FROM razum2um/openresty-localhost:v1
+
+COPY default.conf /etc/nginx/conf.d/default.conf
+RUN sed -i 's/memcached-0/memcached-0\.memcached\.birthdays\.svc\.cluster\.local/' /etc/nginx/conf.d/default.conf
+RUN sed -i 's/memcached-1/memcached-1\.memcached\.birthdays\.svc\.cluster\.local/' /etc/nginx/conf.d/default.conf
+RUN sed -i 's/host:8000/host/' /etc/nginx/conf.d/default.conf
+
+RUN sed -i 's/localhost:8000/birthdays.razum2um.me/' /usr/share/nginx/html/swagger.json

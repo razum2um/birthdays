@@ -1,0 +1,24 @@
+version: '3'
+services:
+  postgres:
+    image: postgres:14
+    environment:
+      - POSTGRES_USER=birthday_test
+      - POSTGRES_PASSWORD=birthday_test
+      - POSTGRES_DB=birthdays_test
+    tmpfs: "/var/lib/postgresql/data:rw,size=${DB_STORAGE_SIZE:-1024}M"
+  app:
+    build:
+      context: ./birthdays
+      dockerfile: Dockerfile-test
+    security_opt:
+      - seccomp:unconfined
+    environment:
+    - RUST_LOG=info
+    - SERVER_ADDR=0.0.0.0:8080
+    - PG.HOST=postgres
+    - PG.USER=birthday_test
+    - PG.PASSWORD=birthday_test
+    - PG.DBNAME=birthdays_test
+    depends_on:
+      - postgres
